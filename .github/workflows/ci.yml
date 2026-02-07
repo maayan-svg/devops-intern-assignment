@@ -1,0 +1,19 @@
+name: CI Process
+
+# Run this workflow every time code is pushed to the main branch
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Download the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Run the Docker Compose setup
+      - name: Run Docker Compose
+        run: docker-compose up --build --exit-code-from test_runner
