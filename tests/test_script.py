@@ -1,32 +1,40 @@
 import requests
-import sys
+import time
 
-def run_tests():
-    # Targets for the two Nginx servers 
-    # 'nginx_service' is the name we will use in Docker Compose later
-    targets = [
-        {"url": "http://nginx_service:80", "expected_status": 200},
-        {"url": "http://nginx_service:81", "expected_status": 500}
-    ]
-
-    for target in targets:
+def test_ports():
+    # Check if ports 80 and 81 are responding
+    for port in [80, 81]:
         try:
-            print(f"Testing {target['url']}...")
-            response = requests.get(target['url'])
-            
-            # Verify the response code [cite: 20]
-            if response.status_code != target['expected_status']:
-                print(f"FAILED: Expected {target['expected_status']}, got {response.status_code}")
-                sys.exit(1) # Exit with non-zero code if test fails [cite: 22]
-            
-            print(f"SUCCESS: Received status {response.status_code}")
-            
+            resp = requests.get(f"http://nginx_server:{port}", timeout=5)
+            if resp.status_code != 200:
+                print(f"Port {port} failed: {resp.status_code}")
+                return False
         except Exception as e:
-            print(f"Connection Error: {e}")
-            sys.exit(1) # Exit with non-zero code on failure [cite: 22]
+            print(f"Connection error on port {port}: {e}")
+            return False
+    return True
 
-    print("All tests passed!")
-    sys.exit(0)
+def test_rate_limiting():
+    # Trigger the 5r/s limit with 10 fast requests
+    status_codes = []
+    for _ in range(10):
+        try:
+            resp = requests.get("http://nginx_server:80")
+            status_codes.append(resp.status_code)
+        except:
+            pass
+    
+    # Validation: Look for 429 or 503 error codes
+    is_limited = any(code in [429, 503] for code in status_codes)
+    if is_limited:
+        print("Rate limit confirmed.")
+    return is_limited
 
 if __name__ == "__main__":
-    run_tests()
+    # Run all tests and exit with correct code for CI
+    if test_ports() and test_rate_limiting():
+        print("All tests passed successfully!")
+        exit(0)
+    else:
+        print("Testing failed!")
+        exit(1)
