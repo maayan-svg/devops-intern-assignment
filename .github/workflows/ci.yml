@@ -1,6 +1,5 @@
 name: CI Process
 
-# Run this workflow every time code is pushed to the main branch
 on:
   push:
     branches: [ main ]
@@ -8,12 +7,31 @@ on:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Download the code from the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Run the Docker Compose setup
       - name: Run Docker Compose
-        run: docker-compose up --build --exit-code-from test_runner
+        id: docker_run
+        # Use continue-on-error so we can create the fail artifact even if tests fail
+        continue-on-error: true 
+        run: docker compose up --build --exit-code-from test_runner
+
+      # Based on the test result: publish artifacts
+      - name: Publish Success Artifact
+        if: steps.docker_run.outcome == 'success'
+        run: |
+          echo "Tests passed successfully" > succeeded
+          mkdir -p results && mv succeeded results/
+
+      - name: Publish Failure Artifact
+        if: steps.docker_run.outcome == 'failure'
+        run: |
+          echo "Tests failed" > failed
+          mkdir -p results && mv failed results/
+
+      - name: Upload Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: results/
