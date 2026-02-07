@@ -13,11 +13,11 @@ This project sets up an Nginx server on Ubuntu with two ports and an automated C
 **My Work & Challenges**
 1. I used Ubuntu as the base image for Nginx as requested. During the setup, I had to fix a few things:
 
-2. Docker Syntax: The CI failed at first because it didn't recognize docker-compose. I fixed it by using the docker compose command.
+2. Docker Syntax: The CI failed at first because it didn't recognize docker-compose: I fixed it by using the docker compose command.
 
-3. GitHub Actions Versions: I updated the workflow to use v4 for the checkout and artifact actions to avoid errors.
+4. GitHub Actions Versions: I updated the workflow to use v4 for the checkout and artifact actions to avoid errors.
 
-4. Custom Artifacts: I added logic to create a succeeded or failed file based on the test results.
+5. Custom Artifacts: I added logic to create a succeeded or failed file based on the test results.
 
 **Advanced Functional Requirements**
 
@@ -36,6 +36,7 @@ This project sets up an Nginx server on Ubuntu with two ports and an automated C
 * It confirms the test passed if the server blocks the excess traffic with a 429 or 503 error code.
 
 **How to run it?**
+
 If you have Docker installed, just run:
 * docker compose up --build
 
