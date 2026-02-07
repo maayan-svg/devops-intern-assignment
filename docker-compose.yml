@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  # The web server defined in the nginx folder
+  nginx_service:
+    build: ./nginx
+    ports:
+      - "80:80"
+      - "81:81"
+
+  # The testing container defined in the tests folder
+  test_runner:
+    build: ./tests
+    depends_on:
+      - nginx_service
