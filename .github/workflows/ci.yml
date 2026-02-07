@@ -9,15 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run Docker Compose
         id: docker_run
-        # Use continue-on-error so we can create the fail artifact even if tests fail
         continue-on-error: true 
         run: docker compose up --build --exit-code-from test_runner
 
-      # Based on the test result: publish artifacts
+      # Publish artifacts based on test results
       - name: Publish Success Artifact
         if: steps.docker_run.outcome == 'success'
         run: |
@@ -30,8 +29,9 @@ jobs:
           echo "Tests failed" > failed
           mkdir -p results && mv failed results/
 
+      # Using v4 - the latest supported version
       - name: Upload Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: results/
